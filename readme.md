@@ -1,12 +1,10 @@
-# Erlang NIF: Binding for libsignal-protocol-c (ALPHA)
+# Erlang NIF: HC-128 crypto encoding/decoding
 
 ## Requirements
 
-sudo apt-get install libgcrypt20-dev gcc-multilib g++-multilib libglib2.0-dev cmake
+sudo apt-get install g++ make
 
 ## BUILD
-
-To build it you should place rebar3 to root of this project.
 
 ## USAGE
 
@@ -20,12 +18,12 @@ make test -- run tests
 
 You can find examples of using in tests.
 
-## Thanks
-
-This C-code based on AXC-library: https://github.com/gkdr/axc
-
 ## License
 
 LGPL3
+
+## Author
+
+Sergey Loguntsov <loguntsov@gmail.com>
 
 
