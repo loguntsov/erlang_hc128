@@ -1,0 +1,10 @@
+{application, erlang_hc128, [
+  {description, "Erlang HC-128 crypto stream implementation"},
+  {vsn, "0.1"},
+  {registered, []},
+  {applications, [
+    kernel,
+    stdlib
+  ]},
+  {env, []}
+]}.
