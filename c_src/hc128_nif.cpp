@@ -119,7 +119,7 @@ ERL_NIF_TERM nif_combine(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
 
     ErlNifBinary outputBin;
     enif_alloc_binary(len, &outputBin);
-    memcpy(output, outputBin.data, len);
+    memcpy(outputBin.data, output, len);
 
     delete output;
 

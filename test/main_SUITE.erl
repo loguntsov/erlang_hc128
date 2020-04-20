@@ -39,7 +39,7 @@ main_test(_) ->
   { ok, Encrypted } = hc128:combine(Stream1, Data),
   { ok, Decrypted } = hc128:combine(Stream2, Encrypted),
 
-  ?_assertEqual(Decrypted, Data).
+  ?assertEqual(Decrypted, Data).
 
 plain_test_0(_) ->
   %% Data taken from https://www.cryptopp.com/wiki/HC-128
@@ -53,14 +53,14 @@ plain_test_0(_) ->
 
   { ok, Encrypted } = hc128:combine(Stream1, Text),
 
-  ?_assertEqual(Encrypted, Cipher),
+  ?assertEqual(Encrypted, Cipher),
 
   { ok, Stream2 } = hc128:new(Key),
   ok = hc128:setiv(Stream2, IV),
 
   { ok, Decrypted } = hc128:combine(Stream2, Cipher),
 
-  ?_assertEqual(Decrypted, Text),
+  ?assertEqual(Decrypted, Text),
 
   ok.
 
@@ -76,13 +76,13 @@ plain_test_1(_) ->
 
   { ok, Encrypted } = hc128:combine(Stream1, Text),
 
-  ?_assertEqual(Encrypted, Cipher),
+  ?assertEqual(Encrypted, Cipher),
 
   { ok, Stream2 } = hc128:new(Key),
   ok = hc128:setiv(Stream2, IV),
 
   { ok, Decrypted } = hc128:combine(Stream2, Cipher),
 
-  ?_assertEqual(Decrypted, Text),
+  ?assertEqual(Decrypted, Text),
 
   ok.
