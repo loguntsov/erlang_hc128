@@ -25,5 +25,3 @@ LGPL3
 ## Author
 
 Sergey Loguntsov <loguntsov@gmail.com>
-
-

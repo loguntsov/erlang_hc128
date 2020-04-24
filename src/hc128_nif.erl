@@ -34,10 +34,14 @@ init() ->
 new(_Key) ->
     erlang:nif_error({error, not_loaded}).
 
+-spec free(context()) -> ok.
+free(_Context) ->
+  erlang:nif_error({error, not_loaded}).
+
 -spec setiv(context(), binary()) -> ok.
 setiv(_Context, _IV) ->
   erlang:nif_error({error, not_loaded}).
 
--spec combine(context(), binary()) -> {ok, binary() }.
+-spec combine(context(), binary()) -> {ok, binary()}.
 combine(_Context, _Binary) ->
   erlang:nif_error({error, not_loaded}).

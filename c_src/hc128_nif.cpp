@@ -27,35 +27,29 @@ void cryptonite_hc128_combine(hc128_ctx *ctx, uint8_t *input, uint32_t len, uint
 // ---------------------------
 
 #include <erl_nif.h>
-
 #include <string.h>
-
 #include "ecrypt-sync.h"
 
-
 typedef struct {
-    ECRYPT_ctx * ctx_p;
-}
-context_resource;
+    ECRYPT_ctx* ctx_p;
+} context_resource;
 
 extern "C" {
-    static ErlNifResourceType * CONTEXT_RESOURCE;
+    static ErlNifResourceType* CONTEXT_RESOURCE;
 
-    ERL_NIF_TERM nif_new(ErlNifEnv * env, int argc, const ERL_NIF_TERM argv[]);
-    ERL_NIF_TERM nif_setiv(ErlNifEnv * env, int argc, const ERL_NIF_TERM argv[]);
-    ERL_NIF_TERM nif_combine(ErlNifEnv * env, int argc, const ERL_NIF_TERM argv[]);
+    ERL_NIF_TERM nif_new(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]);
+    ERL_NIF_TERM nif_setiv(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]);
+    ERL_NIF_TERM nif_combine(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]);
 };
 
-ERL_NIF_TERM nif_new(ErlNifEnv * env, int argc,
-    const ERL_NIF_TERM argv[]) {
+ERL_NIF_TERM nif_new(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
+    context_resource* ctx_res_p = (context_resource*)enif_alloc_resource(CONTEXT_RESOURCE, sizeof(context_resource));
 
-    context_resource * ctx_res_p = (context_resource * ) enif_alloc_resource(CONTEXT_RESOURCE, sizeof(context_resource));
-
-    ctx_res_p - > ctx_p = new ECRYPT_ctx;
-    memset(ctx_res_p - > ctx_p, 0, sizeof(ECRYPT_ctx));
+    ctx_res_p->ctx_p = new ECRYPT_ctx;
+    memset(ctx_res_p->ctx_p, 0, sizeof(ECRYPT_ctx));
 
     ErlNifBinary buffer;
-    if (!enif_inspect_binary(env, argv[0], & buffer)) {
+    if (!enif_inspect_binary(env, argv[0], &buffer)) {
         return enif_make_badarg(env);
     }
 
@@ -68,7 +62,7 @@ ERL_NIF_TERM nif_new(ErlNifEnv * env, int argc,
 
     uint32_t ivlen = 128;
     uint keylen = buffer.size * 8;
-    ECRYPT_keysetup(ctx_res_p - > ctx_p, buffer.data, keylen, ivlen);
+    ECRYPT_keysetup(ctx_res_p->ctx_p, buffer.data, keylen, ivlen);
 
     ERL_NIF_TERM result = enif_make_resource(env, ctx_res_p);
     return enif_make_tuple2(env,
@@ -77,18 +71,29 @@ ERL_NIF_TERM nif_new(ErlNifEnv * env, int argc,
     );
 }
 
-ERL_NIF_TERM nif_setiv(ErlNifEnv * env, int argc,
-    const ERL_NIF_TERM argv[]) {
-    context_resource * ctx_res_p = NULL;
+ERL_NIF_TERM nif_free(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
+    context_resource* ctx_res_p = NULL;
 
-    if (!enif_get_resource(env, argv[0], CONTEXT_RESOURCE, (void ** ) & ctx_res_p)) {
+    if (!enif_get_resource(env, argv[0], CONTEXT_RESOURCE, (void**) &ctx_res_p)) {
         return enif_make_badarg(env);
     }
 
-    ECRYPT_ctx * ctx = ctx_res_p - > ctx_p;
+    enif_release_resource((void*)ctx_res_p);
+
+    return enif_make_atom(env, "ok");
+}
+
+ERL_NIF_TERM nif_setiv(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
+    context_resource* ctx_res_p = NULL;
+
+    if (!enif_get_resource(env, argv[0], CONTEXT_RESOURCE, (void**) &ctx_res_p)) {
+        return enif_make_badarg(env);
+    }
+
+    ECRYPT_ctx* ctx = ctx_res_p->ctx_p;
 
     ErlNifBinary buffer;
-    if (!enif_inspect_binary(env, argv[1], & buffer)) {
+    if (!enif_inspect_binary(env, argv[1], &buffer)) {
         return enif_make_badarg(env);
     }
 
@@ -98,25 +103,24 @@ ERL_NIF_TERM nif_setiv(ErlNifEnv * env, int argc,
 
 }
 
-ERL_NIF_TERM nif_combine(ErlNifEnv * env, int argc,
-    const ERL_NIF_TERM argv[]) {
-    context_resource * ctx_res_p = NULL;
+ERL_NIF_TERM nif_combine(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
+    context_resource* ctx_res_p = NULL;
 
-    if (!enif_get_resource(env, argv[0], CONTEXT_RESOURCE, (void ** ) & ctx_res_p)) {
+    if (!enif_get_resource(env, argv[0], CONTEXT_RESOURCE, (void**) &ctx_res_p)) {
         return enif_make_badarg(env);
     }
 
-    ECRYPT_ctx * ctx = ctx_res_p - > ctx_p;
+    ECRYPT_ctx* ctx = ctx_res_p->ctx_p;
 
     ErlNifBinary buffer;
-    if (!enif_inspect_binary(env, argv[1], & buffer)) {
+    if (!enif_inspect_binary(env, argv[1], &buffer)) {
         return enif_make_badarg(env);
     }
 
     uint len = buffer.size;
-    u8 * output = new u8[len];
+    u8* output = new u8[len];
 
-    ECRYPT_process_bytes(0, ctx, (u8 * ) buffer.data, output, len);
+    ECRYPT_process_bytes(0, ctx, (u8*) buffer.data, output, len);
 
     ErlNifBinary outputBin;
     enif_alloc_binary(len, & outputBin);
@@ -130,17 +134,17 @@ ERL_NIF_TERM nif_combine(ErlNifEnv * env, int argc,
     );
 }
 
-void context_resource_destroy(ErlNifEnv * env, void * arg) {
-    context_resource * ctx_res_p = (context_resource * ) arg;
-    delete ctx_res_p - > ctx_p;
+void context_resource_destroy(ErlNifEnv* env, void* arg) {
+    context_resource* ctx_res_p = (context_resource*)arg;
+    delete ctx_res_p->ctx_p;
 }
 
 extern "C" {
-    int on_load(ErlNifEnv * env, void ** priv_data, ERL_NIF_TERM load_info) {
+    int on_load(ErlNifEnv* env, void** priv_data, ERL_NIF_TERM load_info) {
 
         ErlNifResourceFlags flags = (ErlNifResourceFlags)(ERL_NIF_RT_CREATE | ERL_NIF_RT_TAKEOVER);
         CONTEXT_RESOURCE = NULL;
-        CONTEXT_RESOURCE = enif_open_resource_type(env, NULL, "hc128_context_resource", & context_resource_destroy, flags, NULL);
+        CONTEXT_RESOURCE = enif_open_resource_type(env, NULL, "hc128_context_resource", &context_resource_destroy, flags, NULL);
         if (CONTEXT_RESOURCE == NULL) {
             return -1;
         }
@@ -148,13 +152,14 @@ extern "C" {
         return 0;
     }
 
-    int on_load(ErlNifEnv * env, void ** priv_data, ERL_NIF_TERM load_info);
+    int on_load(ErlNifEnv* env, void** priv_data, ERL_NIF_TERM load_info);
 
     static ErlNifFunc nif_funcs[] = {
         {"new", 1, nif_new},
+        {"free", 1, nif_free},
         {"setiv", 2, nif_setiv},
         {"combine",2,nif_combine}
     };
 
-    ERL_NIF_INIT(hc128_nif, nif_funcs, & on_load, NULL, NULL, NULL);
+    ERL_NIF_INIT(hc128_nif, nif_funcs, &on_load, NULL, NULL, NULL);
 };
