@@ -12,7 +12,7 @@
 new(Key) when is_binary(Key), size(Key) =:= 16 ->
   hc128_nif:new(Key).
 
--spec setiv(context()) -> ok.
+-spec free(context()) -> ok.
 free(Context) ->
   hc128_nif:free(Context).
 
