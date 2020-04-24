@@ -100,7 +100,6 @@ ERL_NIF_TERM nif_setiv(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
     ECRYPT_ivsetup(ctx, buffer.data);
 
     return enif_make_atom(env, "ok");
-
 }
 
 ERL_NIF_TERM nif_combine(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
@@ -112,25 +111,19 @@ ERL_NIF_TERM nif_combine(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
 
     ECRYPT_ctx* ctx = ctx_res_p->ctx_p;
 
-    ErlNifBinary buffer;
-    if (!enif_inspect_binary(env, argv[1], &buffer)) {
+    ErlNifBinary inputBin;
+    if (!enif_inspect_binary(env, argv[1], &inputBin)) {
         return enif_make_badarg(env);
     }
 
-    uint len = buffer.size;
-    u8* output = new u8[len];
-
-    ECRYPT_process_bytes(0, ctx, (u8*) buffer.data, output, len);
-
     ErlNifBinary outputBin;
-    enif_alloc_binary(len, & outputBin);
-    memcpy(outputBin.data, output, len);
+    enif_alloc_binary(inputBin.size, &outputBin);
 
-    delete output;
+    ECRYPT_process_bytes(0, ctx, (u8*)inputBin.data, (u8*)outputBin.data, inputBin.size);
 
     return enif_make_tuple2(env,
         enif_make_atom(env, "ok"),
-        enif_make_binary(env, & outputBin)
+        enif_make_binary(env, &outputBin)
     );
 }
 
