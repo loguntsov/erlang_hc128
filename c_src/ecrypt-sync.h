@@ -87,6 +87,8 @@ typedef struct
   u32 iv[8];
   u32 keysize;       /* key size in bits */
   u32 ivsize;        /* iv size in bits*/ 
+  u32 keystream[16];
+  int keystream_offset;
 } ECRYPT_ctx;
 
 /*-------------------------------------

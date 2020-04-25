@@ -48,21 +48,22 @@ ERL_NIF_TERM nif_new(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
     ctx_res_p->ctx_p = new ECRYPT_ctx;
     memset(ctx_res_p->ctx_p, 0, sizeof(ECRYPT_ctx));
 
-    ErlNifBinary buffer;
-    if (!enif_inspect_binary(env, argv[0], &buffer)) {
+    ErlNifBinary keyBin;
+    if (!enif_inspect_binary(env, argv[0], &keyBin)) {
         return enif_make_badarg(env);
     }
 
-    if (buffer.size != 16) {
+    if (keyBin.size != 16) {
         return enif_make_tuple2(env,
             enif_make_atom(env, "error"),
             enif_make_atom(env, "bad_key_length")
         );
     }
 
-    uint32_t ivlen = 128;
-    uint keylen = buffer.size * 8;
-    ECRYPT_keysetup(ctx_res_p->ctx_p, buffer.data, keylen, ivlen);
+    uint32_t ivlen = 16 * 8;
+    uint keylen = keyBin.size * 8;
+    ECRYPT_keysetup(ctx_res_p->ctx_p, keyBin.data, keylen, ivlen);
+    ctx_res_p->ctx_p->keystream_offset = 0;
 
     ERL_NIF_TERM result = enif_make_resource(env, ctx_res_p);
     return enif_make_tuple2(env,

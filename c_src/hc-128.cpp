@@ -54,7 +54,6 @@ void generate_keystream(ECRYPT_ctx* ctx, u32* keystream)
 
    if (ctx->counter1024 < 512)	
    {   		
-      ctx->counter1024 = (ctx->counter1024 + 16) & 0x3ff;
       step_P(ctx, cc+0, cc+1, 0, 6, 13,4, keystream[0]);
       step_P(ctx, cc+1, cc+2, 1, 7, 14,5, keystream[1]);
       step_P(ctx, cc+2, cc+3, 2, 8, 15,6, keystream[2]);
@@ -74,7 +73,6 @@ void generate_keystream(ECRYPT_ctx* ctx, u32* keystream)
    }
    else				    
    {
-	ctx->counter1024 = (ctx->counter1024 + 16) & 0x3ff;
       step_Q(ctx, 512+cc+0, 512+cc+1, 0, 6, 13,4, keystream[0]);
       step_Q(ctx, 512+cc+1, 512+cc+2, 1, 7, 14,5, keystream[1]);
       step_Q(ctx, 512+cc+2, 512+cc+3, 2, 8, 15,6, keystream[2]);
@@ -92,6 +90,7 @@ void generate_keystream(ECRYPT_ctx* ctx, u32* keystream)
       step_Q(ctx, 512+cc+14,512+cc+15,14,4, 11,2, keystream[14]);
       step_Q(ctx, 512+cc+15,512+dd+0, 15,5, 12,3, keystream[15]);
    }
+   ctx->counter1024 = (ctx->counter1024 + 16) & 0x3ff;
 }
 
 
@@ -134,7 +133,6 @@ void setup_update(ECRYPT_ctx* ctx)  /*each time 16 steps*/
 
    if (ctx->counter1024 < 512)	
    {   		
-      ctx->counter1024 = (ctx->counter1024 + 16) & 0x3ff;
       update_P(ctx, cc+0, cc+1, 0, 6, 13, 4);
       update_P(ctx, cc+1, cc+2, 1, 7, 14, 5);
       update_P(ctx, cc+2, cc+3, 2, 8, 15, 6);
@@ -154,7 +152,6 @@ void setup_update(ECRYPT_ctx* ctx)  /*each time 16 steps*/
    }
    else				    
    {
-      ctx->counter1024 = (ctx->counter1024 + 16) & 0x3ff;
       update_Q(ctx, 512+cc+0, 512+cc+1, 0, 6, 13, 4);
       update_Q(ctx, 512+cc+1, 512+cc+2, 1, 7, 14, 5);
       update_Q(ctx, 512+cc+2, 512+cc+3, 2, 8, 15, 6);
@@ -172,6 +169,7 @@ void setup_update(ECRYPT_ctx* ctx)  /*each time 16 steps*/
       update_Q(ctx, 512+cc+14,512+cc+15,14,4, 11, 2);
       update_Q(ctx, 512+cc+15,512+dd+0, 15,5, 12, 3); 
    }       
+   ctx->counter1024 = (ctx->counter1024 + 16) & 0x3ff;
 }
 
 void ECRYPT_init(void) {
@@ -257,14 +255,10 @@ void ECRYPT_process_bytes(
   u8* output, 
   u32 msglen)                /* Message length in bytes. */ 
 {
-  u32 i, keystream[16];
-
+  u32* keystream = ctx->keystream;
   for ( ; msglen >= 64; msglen -= 64, input += 64, output += 64)
   {
 	  generate_keystream(ctx, keystream);
-
-      /*for (i = 0; i < 16; ++i)
-	      ((u32*)output)[i] = ((u32*)input)[i] ^ U32TO32_LITTLE(keystream[i]); */
 
 	  ((u32*)output)[0]  = ((u32*)input)[0]  ^ U32TO32_LITTLE(keystream[0]);
 	  ((u32*)output)[1]  = ((u32*)input)[1]  ^ U32TO32_LITTLE(keystream[1]);
@@ -284,12 +278,25 @@ void ECRYPT_process_bytes(
 	  ((u32*)output)[15] = ((u32*)input)[15] ^ U32TO32_LITTLE(keystream[15]);
   }
 
-  if (msglen > 0)
-  {
+  while (msglen > 0) {
+    if ((ctx->keystream_offset % 64) == 0) {
       generate_keystream(ctx, keystream);
-
-      for (i = 0; i < msglen; i ++)
-	      output[i] = input[i] ^ ((u8*)keystream)[i];
+      ctx->keystream_offset = 0;
+    }
+    //lazy optimize
+    if (msglen >= 4 && ctx->keystream_offset + 4 <= 60) {
+      u8* keystream_offset = ((u8*)keystream) + ctx->keystream_offset;
+      ((u32*)output)[0]  = ((u32*)input)[0] ^ U32TO32_LITTLE(*(u32*)keystream_offset);
+      output += 4;
+      input += 4;
+      msglen -= 4;
+      ctx->keystream_offset += 4;
+    } else {
+      output[0] = input[0] ^ ((u8*)keystream)[ctx->keystream_offset];
+      output += 1;
+      input += 1;
+      msglen -= 1;
+      ctx->keystream_offset += 1;
+    }
   }
-
 }
