@@ -2,7 +2,9 @@
 
 -export([
   new/1,
+  free/1,
   setiv/2,
+  next_keystream/1,
   combine/2
 ]).
 
@@ -19,6 +21,10 @@ free(Context) ->
 -spec setiv(context(), binary()) -> ok.
 setiv(Context, IV) ->
   hc128_nif:setiv(Context, IV).
+
+-spec next_keystream(context()) -> ok.
+next_keystream(Context) ->
+  hc128_nif:next_keystream(Context).
 
 -spec combine(context(), binary()) -> {ok, binary()}.
 combine(Context, Binary) ->

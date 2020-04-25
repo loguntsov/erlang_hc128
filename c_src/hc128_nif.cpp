@@ -103,6 +103,21 @@ ERL_NIF_TERM nif_setiv(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
     return enif_make_atom(env, "ok");
 }
 
+ERL_NIF_TERM nif_next_keystream(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
+    context_resource* ctx_res_p = NULL;
+
+    if (!enif_get_resource(env, argv[0], CONTEXT_RESOURCE, (void**) &ctx_res_p)) {
+        return enif_make_badarg(env);
+    }
+
+    ECRYPT_ctx* ctx = ctx_res_p->ctx_p;
+
+    generate_keystream(ctx, ctx->keystream);
+    ctx->keystream_offset = 0;
+
+    return enif_make_atom(env, "ok");
+}
+
 ERL_NIF_TERM nif_combine(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
     context_resource* ctx_res_p = NULL;
 
@@ -152,6 +167,7 @@ extern "C" {
         {"new", 1, nif_new},
         {"free", 1, nif_free},
         {"setiv", 2, nif_setiv},
+        {"next_keystream", 1, nif_next_keystream},
         {"combine",2,nif_combine}
     };
 

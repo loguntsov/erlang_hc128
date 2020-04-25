@@ -4,6 +4,7 @@
   new/1,
   free/1,
   setiv/2,
+  next_keystream/1,
   combine/2
 ]).
 
@@ -41,6 +42,10 @@ free(_Context) ->
 
 -spec setiv(context(), binary()) -> ok.
 setiv(_Context, _IV) ->
+  erlang:nif_error({error, not_loaded}).
+
+-spec next_keystream(context()) -> ok.
+next_keystream(_Context) ->
   erlang:nif_error({error, not_loaded}).
 
 -spec combine(context(), binary()) -> {ok, binary()}.

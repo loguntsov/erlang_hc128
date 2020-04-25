@@ -256,35 +256,33 @@ void ECRYPT_process_bytes(
   u32 msglen)                /* Message length in bytes. */ 
 {
   u32* keystream = ctx->keystream;
-  for ( ; msglen >= 64; msglen -= 64, input += 64, output += 64)
-  {
-	  generate_keystream(ctx, keystream);
-
-	  ((u32*)output)[0]  = ((u32*)input)[0]  ^ U32TO32_LITTLE(keystream[0]);
-	  ((u32*)output)[1]  = ((u32*)input)[1]  ^ U32TO32_LITTLE(keystream[1]);
-	  ((u32*)output)[2]  = ((u32*)input)[2]  ^ U32TO32_LITTLE(keystream[2]);
-	  ((u32*)output)[3]  = ((u32*)input)[3]  ^ U32TO32_LITTLE(keystream[3]);
-	  ((u32*)output)[4]  = ((u32*)input)[4]  ^ U32TO32_LITTLE(keystream[4]);
-	  ((u32*)output)[5]  = ((u32*)input)[5]  ^ U32TO32_LITTLE(keystream[5]);
-	  ((u32*)output)[6]  = ((u32*)input)[6]  ^ U32TO32_LITTLE(keystream[6]);
-	  ((u32*)output)[7]  = ((u32*)input)[7]  ^ U32TO32_LITTLE(keystream[7]);
-	  ((u32*)output)[8]  = ((u32*)input)[8]  ^ U32TO32_LITTLE(keystream[8]);
-	  ((u32*)output)[9]  = ((u32*)input)[9]  ^ U32TO32_LITTLE(keystream[9]);
-	  ((u32*)output)[10] = ((u32*)input)[10] ^ U32TO32_LITTLE(keystream[10]);
-	  ((u32*)output)[11] = ((u32*)input)[11] ^ U32TO32_LITTLE(keystream[11]);
-	  ((u32*)output)[12] = ((u32*)input)[12] ^ U32TO32_LITTLE(keystream[12]);
-	  ((u32*)output)[13] = ((u32*)input)[13] ^ U32TO32_LITTLE(keystream[13]);
-	  ((u32*)output)[14] = ((u32*)input)[14] ^ U32TO32_LITTLE(keystream[14]);
-	  ((u32*)output)[15] = ((u32*)input)[15] ^ U32TO32_LITTLE(keystream[15]);
-  }
-
   while (msglen > 0) {
-    if ((ctx->keystream_offset % 64) == 0) {
+    if (ctx->keystream_offset == 64) {
       generate_keystream(ctx, keystream);
       ctx->keystream_offset = 0;
     }
-    //lazy optimize
-    if (msglen >= 4 && ctx->keystream_offset + 4 <= 60) {
+    if (msglen >= 64 && ctx->keystream_offset == 0) {
+      ((u32*)output)[0]  = ((u32*)input)[0]  ^ U32TO32_LITTLE(keystream[0]);
+      ((u32*)output)[1]  = ((u32*)input)[1]  ^ U32TO32_LITTLE(keystream[1]);
+      ((u32*)output)[2]  = ((u32*)input)[2]  ^ U32TO32_LITTLE(keystream[2]);
+      ((u32*)output)[3]  = ((u32*)input)[3]  ^ U32TO32_LITTLE(keystream[3]);
+      ((u32*)output)[4]  = ((u32*)input)[4]  ^ U32TO32_LITTLE(keystream[4]);
+      ((u32*)output)[5]  = ((u32*)input)[5]  ^ U32TO32_LITTLE(keystream[5]);
+      ((u32*)output)[6]  = ((u32*)input)[6]  ^ U32TO32_LITTLE(keystream[6]);
+      ((u32*)output)[7]  = ((u32*)input)[7]  ^ U32TO32_LITTLE(keystream[7]);
+      ((u32*)output)[8]  = ((u32*)input)[8]  ^ U32TO32_LITTLE(keystream[8]);
+      ((u32*)output)[9]  = ((u32*)input)[9]  ^ U32TO32_LITTLE(keystream[9]);
+      ((u32*)output)[10] = ((u32*)input)[10] ^ U32TO32_LITTLE(keystream[10]);
+      ((u32*)output)[11] = ((u32*)input)[11] ^ U32TO32_LITTLE(keystream[11]);
+      ((u32*)output)[12] = ((u32*)input)[12] ^ U32TO32_LITTLE(keystream[12]);
+      ((u32*)output)[13] = ((u32*)input)[13] ^ U32TO32_LITTLE(keystream[13]);
+      ((u32*)output)[14] = ((u32*)input)[14] ^ U32TO32_LITTLE(keystream[14]);
+      ((u32*)output)[15] = ((u32*)input)[15] ^ U32TO32_LITTLE(keystream[15]);
+      output += 64;
+      input += 64;
+      msglen -= 64;
+      ctx->keystream_offset += 64;
+    } else if (msglen >= 4 && ctx->keystream_offset + 4 <= 60) {
       u8* keystream_offset = ((u8*)keystream) + ctx->keystream_offset;
       ((u32*)output)[0]  = ((u32*)input)[0] ^ U32TO32_LITTLE(*(u32*)keystream_offset);
       output += 4;
