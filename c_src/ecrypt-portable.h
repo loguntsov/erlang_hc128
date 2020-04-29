@@ -98,8 +98,6 @@ typedef uint8_t u8;
 #define ROTR32(v, n) ROTL32(v, 32 - (n))
 #define ROTR64(v, n) ROTL64(v, 64 - (n))
 
-#include "ecrypt-machine.h"
-
 /* ------------------------------------------------------------------------- */
 
 /*
@@ -126,8 +124,6 @@ typedef uint8_t u8;
   (((u64)SWAP32(U32V(v)) << 32) | (u64)SWAP32(U32V(v >> 32)))
 #endif
 
-#include "ecrypt-machine.h"
-
 #define ECRYPT_DEFAULT_WTOW
 #define ECRYPT_LITTLE_ENDIAN
 
@@ -150,8 +146,6 @@ typedef uint8_t u8;
 #define U32TO32_BIG(v) (v)
 #define U64TO64_BIG(v) (v)
 #endif
-
-#include "ecrypt-machine.h"
 
 /*
  * The following macros load words from an array of bytes with
@@ -299,9 +293,5 @@ typedef uint8_t u8;
 #endif
 
 #endif
-
-#include "ecrypt-machine.h"
-
-/* ------------------------------------------------------------------------- */
 
 #endif

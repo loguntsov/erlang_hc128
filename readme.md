@@ -2,7 +2,7 @@
 
 ## Requirements
 
-sudo apt-get install g++ make
+sudo apt-get install g++ make libgcrypt20-dev
 
 ## BUILD
 
@@ -25,5 +25,3 @@ LGPL3
 ## Author
 
 Sergey Loguntsov <loguntsov@gmail.com>
-
-
